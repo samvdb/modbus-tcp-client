@@ -10,18 +10,23 @@ class ByteAddress extends Address
     /** @var bool */
     private $firstByte;
 
-    public function __construct(int $address, bool $firstByte, string $name = null)
+    public function __construct(int $address, bool $firstByte, string $name = null, callable $callback = null)
     {
         $type = Address::TYPE_BYTE;
         $fbInt = (int)$firstByte;
-        parent::__construct($address, $type, $name ?: "{$type}_{$address}_{$fbInt}");
+        parent::__construct($address, $type, $name ?: "{$type}_{$address}_{$fbInt}", $callback);
         $this->firstByte = $firstByte;
     }
 
     public function extract(ByteCountResponse $response)
     {
         $word = $response->getWordAt($this->address);
-        return $this->firstByte ? $word->getLowByteAsInt() : $word->getHighByteAsInt();
+        $result = $this->firstByte ? $word->getLowByteAsInt() : $word->getHighByteAsInt();
+        if ($this->callback !== null) {
+            return ($this->callback)($result);
+        }
+
+        return $result;
     }
 
     /**

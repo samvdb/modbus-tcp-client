@@ -41,7 +41,9 @@ class ReadRequestTest extends TestCase
         $uri = 'tcp://192.168.100.1:502';
         $addresses = [
             new Address(0, Address::TYPE_INT16, 'temp1_wo'),
-            new StringAddress(1, 5, 'username')
+            new StringAddress(1, 5, 'username', function ($data) {
+                return 'prefix_' . $data;
+            })
         ];
         $request = new ReadHoldingRegistersRequest(0, 4);
 
@@ -49,7 +51,7 @@ class ReadRequestTest extends TestCase
 
         $values = $rr->extract("\x81\x80\x00\x00\x00\x0B\x01\x03\x08\x01\x00\xF8\x53\x65\x72\x00\x6E");
         $this->assertEquals(
-            ['username' => 'Søren', 'temp1_wo' => 256],
+            ['username' => 'prefix_Søren', 'temp1_wo' => 256],
             $values
         );
     }

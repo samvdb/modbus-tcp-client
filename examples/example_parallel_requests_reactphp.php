@@ -19,7 +19,9 @@ $fc3 = ReadRegistersBuilder::newReadHoldingRegisters('tcp://127.0.0.1:5022')
     ->string(669, 10, 'username')
     // will be another request as uri is different for subsequent string register
     ->useUri('tcp://127.0.0.1:5023')
-    ->string(669, 10, 'username_plc2')
+    ->string(669, 10, 'username_plc2', function ($value) {
+        return 'prefix_' . $value; // transform value after extraction
+    })
     ->build(); // returns array of 3 requests
 
 requestWithReactPhp($fc3);

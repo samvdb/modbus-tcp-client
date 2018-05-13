@@ -38,4 +38,14 @@ class ByteAddressTest extends TestCase
         $this->assertEquals(5, (new ByteAddress(0, true))->extract($responsePacket));
         $this->assertEquals(0, (new ByteAddress(0, false))->extract($responsePacket));
     }
+
+    public function testExtractWithCallback()
+    {
+        $responsePacket = new ReadHoldingRegistersResponse("\x01\x00\x05", 3, 33152);
+
+        $address = new ByteAddress(0, true, null, function ($data) {
+            return 'prefix_' . $data;
+        });
+        $this->assertEquals('prefix_5', $address->extract($responsePacket));
+    }
 }

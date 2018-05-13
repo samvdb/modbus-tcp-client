@@ -56,6 +56,18 @@ class AddressTest extends TestCase
         $this->assertEquals(1, $address->getAddress());
     }
 
+    public function testExtractWithCallback()
+    {
+        $responsePacket = new ReadHoldingRegistersResponse("\x08\x00\x01\x80\x00\x00\x03\x00\x04", 3, 33152);
+        $address = new Address(1, Address::TYPE_UINT16, null, function ($data) {
+            return 'prefix_' . $data;
+        });
+
+        $value = $address->extract($responsePacket);
+
+        $this->assertEquals('prefix_32768', $value);
+    }
+
     public function testExtractInt16()
     {
         $responsePacket = new ReadHoldingRegistersResponse("\x08\x00\x01\x80\x00\x00\x03\x00\x04", 3, 33152);

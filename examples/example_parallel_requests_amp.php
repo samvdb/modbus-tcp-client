@@ -11,7 +11,15 @@ $registers = [
     ['uri' => 'tcp://127.0.0.1:5022', 'type' => 'bit', 'address' => 256, 'bit' => 3, 'name' => 'pump3_overload_alarm_do'],
     ['uri' => 'tcp://127.0.0.1:5022', 'type' => 'byte', 'address' => 257, 'name' => 'direction'],
     // will be split into 2 requests as 1 request can return only range of 124 registers max
-    ['uri' => 'tcp://127.0.0.1:5022', 'type' => 'int16', 'address' => 657, 'name' => 'battery3_voltage_wo'],
+    [
+        'uri' => 'tcp://127.0.0.1:5022',
+        'type' => 'int16',
+        'address' => 657,
+        'name' => 'battery3_voltage_wo',
+        'callback' => function ($value) {
+            return 'prefix_' . $value; // transform value after extraction
+        }
+    ],
     ['uri' => 'tcp://127.0.0.1:5022', 'type' => 'uint16', 'address' => 658, 'name' => 'wind_angle_wo'],
     ['uri' => 'tcp://127.0.0.1:5022', 'type' => 'int32', 'address' => 659, 'name' => 'gps_speed'],
     ['uri' => 'tcp://127.0.0.1:5022', 'type' => 'uint32', 'address' => 661, 'name' => 'distance_total_wo'],

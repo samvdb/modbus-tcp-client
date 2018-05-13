@@ -37,4 +37,16 @@ class StringAddressTest extends TestCase
         $this->assertEquals('Søren', $value);
     }
 
+    public function testExtractWithCallback()
+    {
+        $responsePacket = new ReadHoldingRegistersResponse("\x08\x01\x00\xF8\x53\x65\x72\x00\x6E", 3, 33152);
+        $address = new StringAddress(1, 5, 'username', function ($value) {
+            return 'prefix_' . $value; // transform value after extraction
+        });
+
+        $value = $address->extract($responsePacket);
+
+        $this->assertEquals('prefix_Søren', $value);
+    }
+
 }

@@ -2,6 +2,7 @@
 
 namespace ModbusTcpClient\Reader;
 
+use Closure;
 use ModbusTcpClient\Packet\ModbusFunction\ReadHoldingRegistersRequest;
 use ModbusTcpClient\Packet\ModbusFunction\ReadInputRegistersRequest;
 
@@ -74,6 +75,11 @@ class ReadRegistersBuilder
             throw new \LogicException('empty address given');
         }
 
+        $callback = $register['callback'] ?? null;
+        if ($callback !== null && !($callback instanceof Closure)) {
+            throw new \LogicException('callback must be a an anonymous function');
+        }
+
         $addressType = strtolower($register['type'] ?? null);
         if (empty($addressType) || !\in_array($addressType, Address::TYPES, true)) {
             throw new \LogicException('empty or unknown type for address given');
@@ -81,85 +87,85 @@ class ReadRegistersBuilder
 
         switch ($addressType) {
             case Address::TYPE_BIT:
-                $this->bit($address, $register['bit'] ?? 0, $register['name'] ?? null);
+                $this->bit($address, $register['bit'] ?? 0, $register['name'] ?? null, $callback);
                 break;
             case Address::TYPE_BYTE:
-                $this->byte($address, (bool)($register['firstByte'] ?? true), $register['name'] ?? null);
+                $this->byte($address, (bool)($register['firstByte'] ?? true), $register['name'] ?? null, $callback);
                 break;
             case Address::TYPE_INT16:
-                $this->int16($address, $register['name'] ?? null);
+                $this->int16($address, $register['name'] ?? null, $callback);
                 break;
             case Address::TYPE_UINT16:
-                $this->uint16($address, $register['name'] ?? null);
+                $this->uint16($address, $register['name'] ?? null, $callback);
                 break;
             case Address::TYPE_INT32:
-                $this->int32($address, $register['name'] ?? null);
+                $this->int32($address, $register['name'] ?? null, $callback);
                 break;
             case Address::TYPE_UINT32:
-                $this->uint32($address, $register['name'] ?? null);
+                $this->uint32($address, $register['name'] ?? null, $callback);
                 break;
             case Address::TYPE_UINT64:
-                $this->uint64($address, $register['name'] ?? null);
+                $this->uint64($address, $register['name'] ?? null, $callback);
                 break;
             case Address::TYPE_FLOAT:
-                $this->float($address, $register['name'] ?? null);
+                $this->float($address, $register['name'] ?? null, $callback);
                 break;
             case Address::TYPE_STRING:
-                $this->string($address, $register['length'] ?? null, $register['name'] ?? null);
+                $this->string($address, $register['length'] ?? null, $register['name'] ?? null, $callback);
                 break;
         }
         return $this;
     }
 
-    public function bit(int $address, int $nthBit, string $name = null): ReadRegistersBuilder
+    public function bit(int $address, int $nthBit, string $name = null, callable $callback = null): ReadRegistersBuilder
     {
         if ($nthBit < 0 || $nthBit > 15) {
             throw new \OutOfBoundsException("Invalid bit number in for register given! nthBit: '{$nthBit}', address: {$address}");
         }
-        return $this->addAddress(new BitAddress($address, $nthBit, $name));
+        return $this->addAddress(new BitAddress($address, $nthBit, $name, $callback));
     }
 
-    public function byte(int $address, bool $firstByte = true, string $name = null): ReadRegistersBuilder
+    public function byte(int $address, bool $firstByte = true, string $name = null, callable $callback = null): ReadRegistersBuilder
     {
-        return $this->addAddress(new ByteAddress($address, $firstByte, $name));
+        return $this->addAddress(new ByteAddress($address, $firstByte, $name, $callback));
     }
 
-    public function int16(int $address, string $name = null): ReadRegistersBuilder
+    public function int16(int $address, string $name = null, callable $callback = null): ReadRegistersBuilder
     {
-        return $this->addAddress(new Address($address, Address::TYPE_INT16, $name ?: $address));
+        return $this->addAddress(new Address($address, Address::TYPE_INT16, $name, $callback));
     }
 
-    public function uint16(int $address, string $name = null): ReadRegistersBuilder
+    public function uint16(int $address, string $name = null, callable $callback = null): ReadRegistersBuilder
     {
-        return $this->addAddress(new Address($address, Address::TYPE_UINT16, $name ?: $address));
+        return $this->addAddress(new Address($address, Address::TYPE_UINT16, $name, $callback));
     }
 
-    public function int32(int $address, string $name = null): ReadRegistersBuilder
+    public function int32(int $address, string $name = null, callable $callback = null): ReadRegistersBuilder
     {
-        return $this->addAddress(new Address($address, Address::TYPE_INT32, $name ?: $address));
+        return $this->addAddress(new Address($address, Address::TYPE_INT32, $name, $callback));
     }
 
-    public function uint32(int $address, string $name = null): ReadRegistersBuilder
+    public function uint32(int $address, string $name = null, callable $callback = null): ReadRegistersBuilder
     {
-        return $this->addAddress(new Address($address, Address::TYPE_UINT32, $name ?: $address));
+        return $this->addAddress(new Address($address, Address::TYPE_UINT32, $name, $callback));
     }
 
-    public function uint64(int $address, string $name = null): ReadRegistersBuilder
+    public function uint64(int $address, string $name = null, callable $callback = null): ReadRegistersBuilder
     {
-        return $this->addAddress(new Address($address, Address::TYPE_UINT64, $name ?: $address));
+        return $this->addAddress(new Address($address, Address::TYPE_UINT64, $name, $callback));
     }
 
-    public function float(int $address, string $name = null): ReadRegistersBuilder
+    public function float(int $address, string $name = null, callable $callback = null): ReadRegistersBuilder
     {
-        return $this->addAddress(new Address($address, Address::TYPE_FLOAT, $name ?: $address));
+        return $this->addAddress(new Address($address, Address::TYPE_FLOAT, $name, $callback));
     }
 
-    public function string(int $address, int $byteLength, string $name = null): ReadRegistersBuilder
+    public function string(int $address, int $byteLength, string $name = null, callable $callback = null): ReadRegistersBuilder
     {
         if ($byteLength < 1 || $byteLength > 228) {
             throw new \OutOfBoundsException("Out of range string length for given! length: '{$byteLength}', address: {$address}");
         }
-        return $this->addAddress(new StringAddress($address, $byteLength, $name));
+        return $this->addAddress(new StringAddress($address, $byteLength, $name, $callback));
     }
 
     /**

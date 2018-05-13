@@ -38,7 +38,10 @@ class Address
     /** @var string */
     private $name;
 
-    public function __construct(int $address, string $type, string $name = null)
+    /** @var callable */
+    protected $callback;
+
+    public function __construct(int $address, string $type, string $name = null, callable $callback = null)
     {
         $this->address = $address;
         $this->type = $type;
@@ -47,6 +50,7 @@ class Address
         if (!in_array($type, $this->getAllowedTypes(), true)) {
             throw new \LogicException("Invalid address type given! type: '{$type}', address: {$address}");
         }
+        $this->callback = $callback;
     }
 
     protected function getAllowedTypes()
@@ -63,21 +67,31 @@ class Address
 
     public function extract(ByteCountResponse $response)
     {
+        $result = null;
         switch ($this->type) {
             case Address::TYPE_INT16:
-                return $response->getWordAt($this->address)->getInt16();
+                $result = $response->getWordAt($this->address)->getInt16();
+                break;
             case Address::TYPE_UINT16:
-                return $response->getWordAt($this->address)->getUInt16();
+                $result = $response->getWordAt($this->address)->getUInt16();
+                break;
             case Address::TYPE_INT32:
-                return $response->getDoubleWordAt($this->address)->getInt32();
+                $result = $response->getDoubleWordAt($this->address)->getInt32();
+                break;
             case Address::TYPE_UINT32:
-                return $response->getDoubleWordAt($this->address)->getUInt32();
+                $result = $response->getDoubleWordAt($this->address)->getUInt32();
+                break;
             case Address::TYPE_FLOAT:
-                return $response->getDoubleWordAt($this->address)->getFloat();
+                $result = $response->getDoubleWordAt($this->address)->getFloat();
+                break;
             case Address::TYPE_UINT64:
-                return $response->getQuadWordAt($this->address)->getUInt64();
+                $result = $response->getQuadWordAt($this->address)->getUInt64();
+                break;
         }
-        throw new \RuntimeException('Invalid type given for address extraction!');
+        if ($this->callback !== null) {
+            return ($this->callback)($result);
+        }
+        return $result;
     }
 
     public function getSize(): int

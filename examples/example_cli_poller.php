@@ -11,7 +11,9 @@ $requests = ReadRegistersBuilder::newReadHoldingRegisters('tcp://127.0.0.1:5022'
     ->uint16(453, 'gen1_fuel_rate_wo')
     // will be another request as uri is different for subsequent string register
     ->useUri('tcp://127.0.0.1:5023')
-    ->int16(270, 'room7_temp_wo')
+    ->int16(270, 'room7_temp_wo', function ($value) {
+        return $value ? $value / 10 : $value; // transform value after extraction
+    })
     ->build(); // returns array of 3 requests
 
 // Install: 'composer require react/socket:^0.8.11'

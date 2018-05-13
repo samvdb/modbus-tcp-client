@@ -35,4 +35,14 @@ class BitAddressTest extends TestCase
         $this->assertFalse((new BitAddress(0, 1))->extract($responsePacket));
         $this->assertTrue((new BitAddress(0, 2))->extract($responsePacket));
     }
+
+    public function testExtractWithCallback()
+    {
+        $responsePacket = new ReadHoldingRegistersResponse("\x01\x00\x05", 3, 33152);
+
+        $address = new BitAddress(0, 0, 'name', function ($value) {
+            return 'prefix_' . $value; // transform value after extraction
+        });
+        $this->assertEquals('prefix_1', $address->extract($responsePacket));
+    }
 }
