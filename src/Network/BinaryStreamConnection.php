@@ -1,4 +1,5 @@
 <?php
+
 namespace ModbusTcpClient\Network;
 
 use InvalidArgumentException;
@@ -82,12 +83,13 @@ class BinaryStreamConnection extends BinaryStreamConnectionProperties
     {
         $lastAccess = microtime(true);
 
+        $write = null;
+        $except = null;
         while (true) {
             $read = [$this->streamSocket];
-            $write = null;
-            $except = null;
             $data = '';
-            if (false !== stream_select(
+
+            if (false === stream_select(
                     $read,
                     $write,
                     $except,
@@ -95,27 +97,27 @@ class BinaryStreamConnection extends BinaryStreamConnectionProperties
                     $this->extractUsec($this->getReadTimeoutSec())
                 )
             ) {
-                if ($this->logger) {
-                    $this->logger->debug('Polling data');
-                }
-
-                if (in_array($this->streamSocket, $read, false)) {
-                    $data .= fread($this->streamSocket, 2048); // read max 2048 bytes
-                    if (!empty($data)) {
-                        if ($this->logger) {
-                            $this->logger->debug('Data received: ' . unpack('H*', $data));
-                        }
-                        return $data;
-                    }
-                    $lastAccess = microtime(true);
-                } else {
-                    $timeSpentWaiting = microtime(true) - $lastAccess;
-                    if ($timeSpentWaiting >= $this->getTimeoutSec()) {
-                        throw new IOException('Read total timeout expired');
-                    }
-                }
-            } else {
                 throw new IOException("Failed to read data from {$this->host}:{$this->port}.");
+            }
+
+            if ($this->logger) {
+                $this->logger->debug('Polling data');
+            }
+
+            if (in_array($this->streamSocket, $read, false)) {
+                $data .= fread($this->streamSocket, 2048); // read max 2048 bytes
+                if (!empty($data)) {
+                    if ($this->logger) {
+                        $this->logger->debug('Data received: ' . unpack('H*', $data));
+                    }
+                    return $data;
+                }
+                $lastAccess = microtime(true);
+            } else {
+                $timeSpentWaiting = microtime(true) - $lastAccess;
+                if ($timeSpentWaiting >= $this->getTimeoutSec()) {
+                    throw new IOException('Read total timeout expired');
+                }
             }
         }
         return null;

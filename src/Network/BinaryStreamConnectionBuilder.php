@@ -15,7 +15,7 @@ class BinaryStreamConnectionBuilder extends BinaryStreamConnectionProperties
      */
     public function build()
     {
-        if (empty($this->host)) {
+        if ($this->host === null) {
             throw new \LogicException('host property can not be left null or empty!');
         }
         return new BinaryStreamConnection($this);

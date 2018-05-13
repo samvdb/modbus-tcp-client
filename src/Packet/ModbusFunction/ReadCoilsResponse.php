@@ -85,9 +85,9 @@ class ReadCoilsResponse extends ByteCountResponse implements \ArrayAccess, \Iter
 
     public function offsetGet($offset)
     {
-        $address = ($offset - $this->getStartAddress()) * 2;
-        $byteCount = $this->getByteCount();
-        if ($address < 0 || $address >= $byteCount) {
+        $address = $offset - $this->getStartAddress();
+        $endAddress = ($this->getByteCount() * 8);
+        if ($address < 0 || $address >= $endAddress) {
             throw new \OutOfBoundsException('offset out of bounds');
         }
         return $this->coils[$offset - $this->getStartAddress()];

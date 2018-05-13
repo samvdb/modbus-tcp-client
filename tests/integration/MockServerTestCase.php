@@ -7,7 +7,6 @@ use ModbusTcpClient\Packet\ProtocolDataUnitRequest;
 use PHPUnit\Framework\TestCase;
 use React\ChildProcess\Process;
 use React\EventLoop\Factory;
-use React\EventLoop\Timer\Timer;
 
 abstract class MockServerTestCase extends TestCase
 {
@@ -15,12 +14,12 @@ abstract class MockServerTestCase extends TestCase
     {
         $loop = Factory::create();
 
-        $port = $port ?: mt_rand(10000, 50000);
+        $port = $port ?: random_int(10000, 50000);
         $process = new Process(PHP_BINARY . ' ' . __DIR__ . DIRECTORY_SEPARATOR . "MockResponseServer.php {$protocol} {$port} {$answerTimeout} {$packetToRespond}");
 
         $clientData = [];
-        $loop->addTimer(0.001, function (Timer $timer) use ($process, $closure, $port, &$clientData) {
-            $process->start($timer->getLoop());
+        $loop->addTimer(0.001, function () use ($process, $closure, $port, &$clientData, $loop) {
+            $process->start($loop);
 
             $process->stdout->on('data', function ($output) use (&$clientData) {
                 $clientData[] = $output;

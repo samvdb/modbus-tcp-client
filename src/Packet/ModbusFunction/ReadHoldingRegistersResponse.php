@@ -144,6 +144,11 @@ class ReadHoldingRegistersResponse extends ByteCountResponse implements \ArrayAc
         return new Word(substr($this->data, $address, 2));
     }
 
+    public function getWordAt($wordAddress)
+    {
+        return $this->offsetGet($wordAddress);
+    }
+
     public function getIterator()
     {
         return $this->asWords();

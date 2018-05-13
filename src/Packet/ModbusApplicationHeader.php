@@ -34,7 +34,7 @@ class ModbusApplicationHeader
 
         $this->length = $length + 1; // + 1 is for unitId size
         $this->unitId = $unitId;
-        $this->transactionId = $transactionId ?: mt_rand(1, Types::MAX_VALUE_UINT16);
+        $this->transactionId = $transactionId ?: random_int(1, Types::MAX_VALUE_UINT16);
     }
 
     /**
@@ -90,8 +90,6 @@ class ModbusApplicationHeader
         $length = Types::parseUInt16($binaryString[4] . $binaryString[5]);
         $unitId = Types::parseByte($binaryString[6]);
 
-        self::validate($length, $unitId, $transactionId);
-
         return new ModbusApplicationHeader(
             $length,
             $unitId,
@@ -99,7 +97,7 @@ class ModbusApplicationHeader
         );
     }
 
-    private static function validate($length, $unitId, $transactionId)
+    private function validate($length, $unitId, $transactionId)
     {
         if (!$length || !($length > 0 && $length <= Types::MAX_VALUE_UINT16)) {
             throw new \OutOfRangeException("length is not set or out of range (uint16): {$length}");

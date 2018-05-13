@@ -160,6 +160,26 @@ class ReadHoldingRegistersResponseTest extends TestCase
         $this->assertFalse(isset($packet[54]));
     }
 
+    /**
+     * @expectedException \LogicException
+     * @expectedExceptionMessage setting value in response is not supported!
+     */
+    public function testOffsetSet()
+    {
+        $packet = new ReadHoldingRegistersResponse("\x06\xCD\x6B\x0\x0\x0\x01", 3, 33152);
+        $packet[50] = 1;
+    }
+
+    /**
+     * @expectedException \LogicException
+     * @expectedExceptionMessage unsetting value in response is not supported!
+     */
+    public function testOffsetUnSet()
+    {
+        $packet = new ReadHoldingRegistersResponse("\x06\xCD\x6B\x0\x0\x0\x01", 3, 33152);
+        unset($packet[50]);
+    }
+
     public function testOffsetGet()
     {
         $packet = (new ReadHoldingRegistersResponse(
@@ -171,6 +191,20 @@ class ReadHoldingRegistersResponseTest extends TestCase
         $this->assertEquals([0xCD, 0x6B], $packet[50]->getBytes());
         $this->assertEquals([0x4, 0x3], $packet[51]->getBytes());
         $this->assertEquals([0x2, 0x1], $packet[52]->getBytes());
+    }
+
+    public function testGetWordAt()
+    {
+        $packet = (new ReadHoldingRegistersResponse(
+            "\x06\xCD\x6B\x4\x3\x2\x01",
+            3,
+            33152
+        ))->withStartAddress(50);
+
+        $this->assertEquals([0xCD, 0x6B], $packet->getWordAt(50)->getBytes());
+        $this->assertEquals([0x4, 0x3], $packet->getWordAt(51)->getBytes());
+        $this->assertEquals([0x2, 0x1], $packet->getWordAt(52)->getBytes());
+        $this->assertEquals([0x2, 0x1], $packet->getWordAt(52)->getBytes());
     }
 
     /**

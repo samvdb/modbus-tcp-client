@@ -7,6 +7,10 @@ use ModbusTcpClient\Utils\Types;
 
 /**
  * Response for Write Single Coil (FC=05)
+ *
+ * Data part of packet is always 4 bytes - 2 byte for address and 2 byte for coil status (FF00 = on,  0000 = off).
+ * For example: coil at address 1 is turned on '\x00\x01\xFF\x00'
+ * For example: coil at address 10 is turned off '\x00\x0A\x00\x00'
  */
 class WriteSingleCoilResponse extends StartAddressResponse
 {
